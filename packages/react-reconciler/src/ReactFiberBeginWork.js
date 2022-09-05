@@ -621,6 +621,7 @@ function updateFunctionComponent(
   return workInProgress.child;
 }
 
+/* workloop React 处理类组件的主要功能方法 */
 function updateClassComponent(
   current: Fiber | null,
   workInProgress: Fiber,
