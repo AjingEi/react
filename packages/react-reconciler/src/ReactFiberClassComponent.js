@@ -6,9 +6,17 @@
  *
  * @flow
  */
+<<<<<<< Updated upstream:packages/react-reconciler/src/ReactFiberClassComponent.js
 
 import type {Fiber} from './ReactFiber';
 import type {ExpirationTime} from './ReactFiberExpirationTime';
+=======
+// 执行类组件
+import type {Fiber} from './ReactInternalTypes';
+import type {Lanes} from './ReactFiberLane.new';
+import type {UpdateQueue} from './ReactUpdateQueue.new';
+import type {Flags} from './ReactFiberFlags';
+>>>>>>> Stashed changes:packages/react-reconciler/src/ReactFiberClassComponent.new.js
 
 import React from 'react';
 import {Update, Snapshot} from 'shared/ReactSideEffectTags';
@@ -180,23 +188,52 @@ export function applyDerivedStateFromProps(
 
 const classComponentUpdater = {
   isMounted,
-  enqueueSetState(inst, payload, callback) {
+  enqueueSetState(inst, payload, callback) { // setState实际调用的方法
     const fiber = getInstance(inst);
     const currentTime = requestCurrentTime();
     const expirationTime = computeExpirationForFiber(currentTime, fiber);
 
+<<<<<<< Updated upstream:packages/react-reconciler/src/ReactFiberClassComponent.js
     const update = createUpdate(expirationTime);
+=======
+    // 创建update
+    const update = createUpdate(eventTime, lane);
+>>>>>>> Stashed changes:packages/react-reconciler/src/ReactFiberClassComponent.new.js
     update.payload = payload;
     if (callback !== undefined && callback !== null) {
       if (__DEV__) {
         warnOnInvalidCallback(callback, 'setState');
       }
+      // callback 可以理解为 setState 回调函数
       update.callback = callback;
     }
 
+<<<<<<< Updated upstream:packages/react-reconciler/src/ReactFiberClassComponent.js
     flushPassiveEffects();
     enqueueUpdate(fiber, update);
     scheduleWork(fiber, expirationTime);
+=======
+    // enqueueUpdate 把当前的update 传入当前fiber，待更新队列中
+    enqueueUpdate(fiber, update, lane);
+    //调度更新
+    const root = scheduleUpdateOnFiber(fiber, lane, eventTime);
+    if (root !== null) {
+      entangleTransitions(root, fiber, lane);
+    }
+
+    if (__DEV__) {
+      if (enableDebugTracing) {
+        if (fiber.mode & DebugTracingMode) {
+          const name = getComponentNameFromFiber(fiber) || 'Unknown';
+          logStateUpdateScheduled(name, lane, payload);
+        }
+      }
+    }
+
+    if (enableSchedulingProfiler) {
+      markStateUpdateScheduled(fiber, lane);
+    }
+>>>>>>> Stashed changes:packages/react-reconciler/src/ReactFiberClassComponent.new.js
   },
   enqueueReplaceState(inst, payload, callback) {
     const fiber = getInstance(inst);
@@ -503,11 +540,18 @@ function adoptClassInstance(workInProgress: Fiber, instance: any): void {
   }
 }
 
+// 创建类组件
 function constructClassInstance(
+<<<<<<< Updated upstream:packages/react-reconciler/src/ReactFiberClassComponent.js
   workInProgress: Fiber,
   ctor: any,
   props: any,
   renderExpirationTime: ExpirationTime,
+=======
+  workInProgress: Fiber, // 当前正在工作的 fiber 对象
+  ctor: any, // 我们的类组件
+  props: any, // 最新的props
+>>>>>>> Stashed changes:packages/react-reconciler/src/ReactFiberClassComponent.new.js
 ): any {
   let isLegacyContextConsumer = false;
   let unmaskedContext = emptyContextObject;
@@ -569,6 +613,11 @@ function constructClassInstance(
       : emptyContextObject;
   }
 
+<<<<<<< Updated upstream:packages/react-reconciler/src/ReactFiberClassComponent.js
+=======
+  // 实例化类组件
+  let instance = new ctor(props, context);
+>>>>>>> Stashed changes:packages/react-reconciler/src/ReactFiberClassComponent.new.js
   // Instantiate twice to help detect side-effects.
   if (__DEV__) {
     if (

@@ -17,6 +17,7 @@ if (__DEV__) {
 
 /**
  * Base class helpers for the updating state of a component.
+ * 类组件的定义
  */
 function Component(props, context, updater) {
   this.props = props;
@@ -55,6 +56,7 @@ Component.prototype.isReactComponent = {};
  * @final
  * @protected
  */
+// 绑定setState
 Component.prototype.setState = function(partialState, callback) {
   invariant(
     typeof partialState === 'object' ||

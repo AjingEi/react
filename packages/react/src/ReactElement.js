@@ -168,6 +168,12 @@ const ReactElement = function(type, key, ref, self, source, owner, props) {
  * Create and return a new ReactElement of the given type.
  * See https://reactjs.org/docs/react-api.html#createelement
  */
+/**
+ * type： dom元素
+ * config：dom属性
+ * children：子元素
+ * See https://reactjs.org/docs/react-api.html#createelement
+ */
 export function createElement(type, config, children) {
   let propName;
 
