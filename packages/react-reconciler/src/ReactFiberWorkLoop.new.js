@@ -517,11 +517,13 @@ export function scheduleUpdateOnFiber(
 ): FiberRoot | null {
   checkForNestedUpdates();
 
+  // 找到根节点
   const root = markUpdateLaneFromFiberToRoot(fiber, lane);
   if (root === null) {
     return null;
   }
 
+  // 标记root有待更新的update
   // Mark that the root has a pending update.
   markRootUpdated(root, lane, eventTime);
 
@@ -1819,18 +1821,22 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
   }
 }
 
+// 入口调用
 /** @noinline */
 function workLoopConcurrent() {
   // Perform work until Scheduler asks us to yield
   while (workInProgress !== null && !shouldYield()) {
+    // 每次执行玩，workInProgress会被更新为下一个节点，即开始处理下一个fiber
     performUnitOfWork(workInProgress);
   }
 }
 
+// 一直循环调用
 function performUnitOfWork(unitOfWork: Fiber): void {
   // The current, flushed, state of this fiber is the alternate. Ideally
   // nothing should rely on this, but relying on it here means that we don't
   // need an additional field on the work in progress.
+  // 索引传入current，之后对应的current节点就可以赋值到这个内存上
   const current = unitOfWork.alternate;
   setCurrentDebugFiberInDEV(unitOfWork);
 

@@ -1147,7 +1147,7 @@ function ChildReconciler(shouldTrackSideEffects) {
     lanes: Lanes,
   ): Fiber {
     const key = element.key;
-    let child = currentFirstChild;
+    let child = currentFirstChild; // 老fiberchild
     while (child !== null) {
       // TODO: If key === null and child.key === null, then this only applies to
       // the first item in the list.
@@ -1198,7 +1198,7 @@ function ChildReconciler(shouldTrackSideEffects) {
       } else {
         deleteChild(returnFiber, child);
       }
-      child = child.sibling;
+      child = child.sibling; // 继续循环
     }
 
     if (element.type === REACT_FRAGMENT_TYPE) {

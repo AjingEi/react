@@ -6,7 +6,7 @@
  *
  * @flow
  */
-
+// 执行类组件
 import type {Fiber} from './ReactInternalTypes';
 import type {Lanes} from './ReactFiberLane.new';
 import type {UpdateQueue} from './ReactUpdateQueue.new';
@@ -35,9 +35,9 @@ import {get as getInstance, set as setInstance} from 'shared/ReactInstanceMap';
 import shallowEqual from 'shared/shallowEqual';
 import getComponentNameFromFiber from 'react-reconciler/src/getComponentNameFromFiber';
 import getComponentNameFromType from 'shared/getComponentNameFromType';
-import assign from 'shared/assign';
 import isArray from 'shared/isArray';
 import {REACT_CONTEXT_TYPE, REACT_PROVIDER_TYPE} from 'shared/ReactSymbols';
+import {setIsStrictModeForDevtools} from './ReactFiberDevToolsHook.new';
 
 import {resolveDefaultProps} from './ReactFiberLazyComponent.new';
 import {
@@ -74,11 +74,11 @@ import {
   scheduleUpdateOnFiber,
 } from './ReactFiberWorkLoop.new';
 import {logForceUpdateScheduled, logStateUpdateScheduled} from './DebugTracing';
+
 import {
   markForceUpdateScheduled,
   markStateUpdateScheduled,
-  setIsStrictModeForDevtools,
-} from './ReactFiberDevToolsHook.new';
+} from './SchedulingProfiler';
 
 const fakeInternalInstance = {};
 
@@ -187,7 +187,7 @@ function applyDerivedStateFromProps(
   const memoizedState =
     partialState === null || partialState === undefined
       ? prevState
-      : assign({}, prevState, partialState);
+      : Object.assign({}, prevState, partialState);
   workInProgress.memoizedState = memoizedState;
 
   // Once the update queue is empty, persist the derived state onto the
@@ -201,21 +201,25 @@ function applyDerivedStateFromProps(
 
 const classComponentUpdater = {
   isMounted,
-  enqueueSetState(inst, payload, callback) {
+  enqueueSetState(inst, payload, callback) { // setState实际调用的方法
     const fiber = getInstance(inst);
     const eventTime = requestEventTime();
     const lane = requestUpdateLane(fiber);
 
+    // 创建update
     const update = createUpdate(eventTime, lane);
     update.payload = payload;
     if (callback !== undefined && callback !== null) {
       if (__DEV__) {
         warnOnInvalidCallback(callback, 'setState');
       }
+      // callback 可以理解为 setState 回调函数
       update.callback = callback;
     }
 
+    // enqueueUpdate 把当前的update 传入当前fiber，待更新队列中
     enqueueUpdate(fiber, update, lane);
+    //调度更新
     const root = scheduleUpdateOnFiber(fiber, lane, eventTime);
     if (root !== null) {
       entangleTransitions(root, fiber, lane);
@@ -589,10 +593,11 @@ function adoptClassInstance(workInProgress: Fiber, instance: any): void {
   }
 }
 
+// 创建类组件
 function constructClassInstance(
-  workInProgress: Fiber,
-  ctor: any,
-  props: any,
+  workInProgress: Fiber, // 当前正在工作的 fiber 对象
+  ctor: any, // 我们的类组件
+  props: any, // 最新的props
 ): any {
   let isLegacyContextConsumer = false;
   let unmaskedContext = emptyContextObject;
@@ -653,6 +658,7 @@ function constructClassInstance(
       : emptyContextObject;
   }
 
+  // 实例化类组件
   let instance = new ctor(props, context);
   // Instantiate twice to help detect side-effects.
   if (__DEV__) {
