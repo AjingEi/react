@@ -68,9 +68,11 @@ function ReactDOMBlockingRoot(
   tag: RootTag,
   options: void | RootOptions,
 ) {
+  // 创建fiberroot 和 hostrootfibrt
   this._internalRoot = createRootImpl(container, tag, options);
 }
 
+// concurrent / blocking模式 调用 ReactDOMRoot上的render进行启动渲染
 ReactDOMRoot.prototype.render = ReactDOMBlockingRoot.prototype.render = function(
   children: ReactNodeList,
 ): void {
@@ -98,6 +100,7 @@ ReactDOMRoot.prototype.render = ReactDOMBlockingRoot.prototype.render = function
       }
     }
   }
+  // 直接进入reconciler
   updateContainer(children, root, null, null);
 };
 
@@ -131,7 +134,9 @@ function createRootImpl(
       options.hydrationOptions != null &&
       options.hydrationOptions.mutableSources) ||
     null;
+    // 创建fiberRoot
   const root = createContainer(container, tag, hydrate, hydrationCallbacks);
+  // 标记DOM对象到fiber
   markContainerAsRoot(root.current, container);
   const containerNodeType = container.nodeType;
 
