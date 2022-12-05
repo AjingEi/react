@@ -21,6 +21,7 @@ const hasPerformanceNow =
 
 if (hasPerformanceNow) {
   const localPerformance = performance;
+  // 获取当前时间
   getCurrentTime = () => localPerformance.now();
 } else {
   const localDate = Date;
@@ -112,6 +113,7 @@ if (
   // thread, like user events. By default, it yields multiple times per frame.
   // It does not attempt to align with frame boundaries, since most tasks don't
   // need to be frame aligned; for those that do, use requestAnimationFrame.
+  // 时间切片周期，默认5ms
   let yieldInterval = 5;
   let deadline = 0;
 
@@ -151,12 +153,14 @@ if (
       }
     };
 
+    // 要求渲染
     requestPaint = function() {
       needsPaint = true;
     };
   } else {
     // `isInputPending` is not available. Since we have no way of knowing if
     // there's pending input, always yield at the end of the frame.
+    // 是否需要让出主线程
     shouldYieldToHost = function() {
       return getCurrentTime() >= deadline;
     };
@@ -165,6 +169,7 @@ if (
     requestPaint = function() {};
   }
 
+  // 设置时间切片周期
   forceFrameRate = function(fps) {
     if (fps < 0 || fps > 125) {
       // Using console['error'] to evade Babel and ESLint
@@ -182,15 +187,18 @@ if (
     }
   };
 
+  // 消费循环队列中的任务
   const performWorkUntilDeadline = () => {
     if (scheduledHostCallback !== null) {
       const currentTime = getCurrentTime();
       // Yield after `yieldInterval` ms, regardless of where we are in the vsync
       // cycle. This means there's always time remaining at the beginning of
       // the message event.
+      // 截止渲染时间
       deadline = currentTime + yieldInterval;
       const hasTimeRemaining = true;
       try {
+        // 判断是否还有更多task
         const hasMoreWork = scheduledHostCallback(
           hasTimeRemaining,
           currentTime,
@@ -201,6 +209,7 @@ if (
         } else {
           // If there's more work, schedule the next message event at the end
           // of the preceding one.
+          // 触发下一个任务
           port.postMessage(null);
         }
       } catch (error) {
@@ -219,12 +228,16 @@ if (
 
   const channel = new MessageChannel();
   const port = channel.port2;
+  // 注册消费任务函数
   channel.port1.onmessage = performWorkUntilDeadline;
 
+  // 及时调用回调函数
   requestHostCallback = function(callback) {
+    // 回调函数
     scheduledHostCallback = callback;
     if (!isMessageLoopRunning) {
       isMessageLoopRunning = true;
+      // 触发消费
       port.postMessage(null);
     }
   };

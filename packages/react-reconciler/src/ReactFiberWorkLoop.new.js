@@ -683,6 +683,7 @@ function markUpdateLaneFromFiberToRoot(
 // root has work on. This function is called on every update, and right before
 // exiting a task.
 function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
+  // fiberRoot上已经在调度的标示
   const existingCallbackNode = root.callbackNode;
 
   // Check if any lanes are being starved by other work. If so, mark them as
@@ -708,6 +709,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   }
 
   // Check if there's an existing task. We may be able to reuse it.
+  // 如果已经存在调度，就不启用新的任务
   if (existingCallbackNode !== null) {
     const existingCallbackPriority = root.callbackPriority;
     if (existingCallbackPriority === newCallbackPriority) {
@@ -716,6 +718,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
     }
     // The priority changed. Cancel the existing callback. We'll schedule a new
     // one below.
+    // 如果任务优先级更高，就取消现在已经生成的任务，重新生成新的任务。
     cancelCallback(existingCallbackNode);
   }
 

@@ -118,6 +118,7 @@ function handleTimeout(currentTime) {
   }
 }
 
+// 启动loop
 function flushWork(hasTimeRemaining, initialTime) {
   if (enableProfiling) {
     markSchedulerUnsuspended(initialTime);
@@ -168,6 +169,7 @@ function workLoop(hasTimeRemaining, initialTime) {
     currentTask !== null &&
     !(enableSchedulerDebugging && isSchedulerPaused)
   ) {
+    // 如果超时就退出
     if (
       currentTask.expirationTime > currentTime &&
       (!hasTimeRemaining || shouldYieldToHost())
@@ -183,6 +185,7 @@ function workLoop(hasTimeRemaining, initialTime) {
       if (enableProfiling) {
         markTaskRun(currentTask, currentTime);
       }
+      // 执行回调，如果有返回新的回调，就继续执行新的回调
       const continuationCallback = callback(didUserCallbackTimeout);
       currentTime = getCurrentTime();
       if (typeof continuationCallback === 'function') {
@@ -279,6 +282,7 @@ function unstable_wrapCallback(callback) {
   };
 }
 
+// 注册回调
 function unstable_scheduleCallback(priorityLevel, callback, options) {
   var currentTime = getCurrentTime();
 
@@ -294,6 +298,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     startTime = currentTime;
   }
 
+  // 根据优先级，获取超时时间
   var timeout;
   switch (priorityLevel) {
     case ImmediatePriority:
@@ -328,6 +333,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     newTask.isQueued = false;
   }
 
+  // 注册任务
   if (startTime > currentTime) {
     // This is a delayed task.
     newTask.sortIndex = startTime;
@@ -354,6 +360,7 @@ function unstable_scheduleCallback(priorityLevel, callback, options) {
     // wait until the next time we yield.
     if (!isHostCallbackScheduled && !isPerformingWork) {
       isHostCallbackScheduled = true;
+      // 协调立即执行回调
       requestHostCallback(flushWork);
     }
   }
